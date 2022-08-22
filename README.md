@@ -2,14 +2,19 @@
 
 ## Env Variables
 
+### Running in cluster
+
+| Name | Description | 
+|-------------|--------------------------------------------------------------------|
+| AWS_REGION  | required, the region we are replicating from.                      |
+| SSM_PATH    | required, this specifies the source ssm path, ex: "/my-ssm-path/". |
+| HOSTNAME    | required, used in IRSA session name.                               |
+
+### Local testing
 | Name | Description | 
 |-------------|-------------------------------------------------------------------|
-| AWS_REGION  | required, the region we are replicating FROM                      |
-| SSM_PATH    | required, this specifies the source ssm path, ex: "/my-ssm-path/" |
-| LOCAL       | if set we are running on a server this is optional                |
-| AWS_PROFILE | required if LOCAL is set                                          |
-| HOSTNAME    | required of LOCAL is unset. Used in IRSA session name.            |
-
+| LOCAL       | if set run using a local aws profile for testing.                 |
+| AWS_PROFILE | name of the aws profile to use when running locally.              |
 ## Parameter tags
 
 Parameters must have a `ssm-replicate-regions` tag or they are ignored. The tag value for
