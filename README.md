@@ -39,7 +39,7 @@ Below is a sample AWS policy that shows the required permissions for syncing par
            ],
            "Effect": "Allow",
            "Resource": "arn:aws:ssm:*:<account number>:parameter/*",
-           "Sid": "ExternalSecrets"
+           "Sid": "SSMSync"
        }
    ],
    "Version": "2012-10-17"
