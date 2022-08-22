@@ -1,10 +1,3 @@
-// TODO's
-//
-// - [ ] change context.TODO and context.Background to something context.WithTimeout
-// - [x] Add tags to destination parameters.  ssm-replicated-from: region-name
-// - [x] move aws auth into function
-// - [x] remove backoff retries from syncParam since we are syncing every time just log the error and move on
-
 package main
 
 import (
@@ -44,7 +37,7 @@ import (
 //             ],
 //             "Effect": "Allow",
 //             "Resource": "arn:aws:ssm:*:<account number>:parameter/*",
-//             "Sid": "ExternalSecrets"
+//             "Sid": "SSMSync"
 //         }
 //     ],
 //     "Version": "2012-10-17"
