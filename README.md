@@ -15,7 +15,10 @@
 |-------------|-------------------------------------------------------------------|
 | LOCAL       | if set run using a local aws profile for testing.                 |
 | AWS_PROFILE | name of the aws profile to use when running locally.              |
+
 ## Parameter tags
+
+### Source parameter
 
 Parameters must have a `ssm-replicate-regions` tag or they are ignored. The tag value for
 `ssm-replicate-regions` is a `:` separated list of region to replicate the parameter _to_.
@@ -25,6 +28,10 @@ Example:
 ```
 ssm-replicate-regions: us-east-1:us-west-1
 ```
+
+### Destination parameter
+
+Replicated parameters get tagged with `ssm-replicated-from`. The value of these tags is the source region the parameter was replicated from.
 
 ## Required Permissions
 
