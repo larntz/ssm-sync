@@ -43,7 +43,7 @@ func syncParam(name string, arn string, region string) {
 	destSsmClient := ssm.NewFromConfig(destCfg)
 	_, err = destSsmClient.PutParameter(ctx, &destinationParameterInput)
 	if err != nil {
-		log.Printf("ERROR: unable to retrieve paramenter [%s] from [%s]", name, sourceRegion)
+		log.Printf("ERROR: unable to put paramenter [%s] in [%s]", name, region)
 		log.Printf("ERROR: %s", err)
 		return
 	}
@@ -63,7 +63,7 @@ func syncParam(name string, arn string, region string) {
 	}
 	_, err = destSsmClient.AddTagsToResource(ctx, &addTagsInput)
 	if err != nil {
-		log.Printf("ERROR: unable to tag paramenter [%s] from [%s]", name, sourceRegion)
+		log.Printf("ERROR: unable to tag paramenter [%s] in [%s]", name, region)
 		log.Printf("ERROR: %s", err)
 		return
 	}
