@@ -44,12 +44,12 @@ import (
 // }
 
 func main() {
-	log.Printf("ssm-sync starting")
+	log.Printf("INFO: ssm-sync started")
 
 	ssmClient, _ := awsAuth()
 	for {
-		log.Printf("starting sync... ")
-		syncAllParams(ssmClient, os.Getenv("SSM_PATH"))
+		log.Printf("INFO: starting sync")
+		sync(ssmClient, os.Getenv("SSM_PATH"))
 		time.Sleep(1 * time.Minute)
 	}
 }

@@ -33,6 +33,8 @@ ssm-replicate-regions: us-east-1:us-west-1
 
 Replicated parameters get tagged with `ssm-replicated-from`. The value of these tags is the source region the parameter was replicated from.
 
+If the destination parameter exists it must be tagged with `ssm-replicated-from` **and** the tag value must match `AWS_REGION` or it will be skipped.
+
 ## Required Permissions
 
 Below is a sample AWS policy that shows the required permissions for syncing parameters:

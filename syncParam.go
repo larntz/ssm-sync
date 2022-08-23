@@ -24,49 +24,48 @@ func syncParam(name string, arn string, region string) {
 
 	decryptedSourceParam, err := ssmClient.GetParameter(ctx, &getParamInput)
 	if err != nil {
-		log.Printf("ERROR: unable to retrieve paramenter [%s] from [%s]", name, GetRegion(arn))
-		log.Printf("ERROR: %s", err)
+		log.Printf("ERR: unable to retrieve paramenter [%s] from [%s]", name, GetRegion(arn))
+		log.Printf("ERR: %s", err)
 		return
 	}
 
-	destinationParamName := strings.Replace(name, GetRegion(arn), region, -1)
-	destinationParameterInput := ssm.PutParameterInput{
-		Name:      &destinationParamName,
-		Value:     decryptedSourceParam.Parameter.Value,
-		DataType:  decryptedSourceParam.Parameter.DataType,
-		Type:      decryptedSourceParam.Parameter.Type,
-		Overwrite: true,
-	}
-
+	destParamName := strings.Replace(name, sourceRegion, region, -1)
 	destCfg := cfg
 	destCfg.Region = region
 	destSsmClient := ssm.NewFromConfig(destCfg)
-	_, err = destSsmClient.PutParameter(ctx, &destinationParameterInput)
+	destParameterInput := ssm.PutParameterInput{
+		Name:     &destParamName,
+		Value:    decryptedSourceParam.Parameter.Value,
+		DataType: decryptedSourceParam.Parameter.DataType,
+		Type:     decryptedSourceParam.Parameter.Type,
+	}
+
+	exists, tagRegion := lookupDestinationParam(ctx, destSsmClient, destParamName, region)
+	if exists {
+		if tagRegion != sourceRegion {
+			// this paramter was replicated from a different region. Skip it.
+			log.Printf("WARN: parameter [%s] in [%s] exists, but was replicated from a different region or is not tagged. ['%s' != '%s']", name, region, tagRegion, sourceRegion)
+			return
+		}
+		// put with overwrite no tagging
+		destParameterInput.Overwrite = true
+	} else {
+		// put new parameter with tag
+		tagKey := "ssm-replicated-from"
+		destParameterInput.Tags = []ssmType.Tag{
+			{
+				Key:   &tagKey,
+				Value: &sourceRegion,
+			},
+		}
+	}
+
+	_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
 	if err != nil {
-		log.Printf("ERROR: unable to put paramenter [%s] in [%s]", name, region)
-		log.Printf("ERROR: %s", err)
+		log.Printf("ERR: unable to put paramenter [%s] in [%s]", name, region)
+		log.Printf("ERR: %s", err)
 		return
 	}
 
-	tagKey := "ssm-replicated-from"
-	destinationParamTags := []ssmType.Tag{
-		{
-			Key:   &tagKey,
-			Value: &sourceRegion,
-		},
-	}
-
-	addTagsInput := ssm.AddTagsToResourceInput{
-		ResourceId:   &destinationParamName,
-		Tags:         destinationParamTags,
-		ResourceType: "Parameter",
-	}
-	_, err = destSsmClient.AddTagsToResource(ctx, &addTagsInput)
-	if err != nil {
-		log.Printf("ERROR: unable to tag paramenter [%s] in [%s]", name, region)
-		log.Printf("ERROR: %s", err)
-		return
-	}
-
-	log.Printf("successfully syncd [%s] from region [%s] to region [%s]", name, sourceRegion, region)
+	log.Printf("INFO: successfully syncd [%s] from region [%s] to region [%s]", name, sourceRegion, region)
 }

@@ -10,13 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-// GetRegion returns the region found in the parameter's ARN
-func GetRegion(arn string) string {
-	return strings.Split(arn, ":")[3]
-}
-
-// syncAllParams grabs parameters from ssm
-func syncAllParams(ssmClient *ssm.Client, path string) {
+// sync grabs parameters from ssm
+func sync(ssmClient *ssm.Client, path string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*20))
 	defer cancel()
 
