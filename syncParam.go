@@ -10,7 +10,7 @@ import (
 	ssmType "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 )
 
-func syncParam(name string, arn string, region string) {
+func syncParam(name string, arn string, destRegion string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
 	defer cancel()
 
@@ -29,9 +29,9 @@ func syncParam(name string, arn string, region string) {
 		return
 	}
 
-	destParamName := strings.Replace(name, sourceRegion, region, -1)
+	destParamName := strings.Replace(name, sourceRegion, destRegion, -1)
 	destCfg := cfg
-	destCfg.Region = region
+	destCfg.Region = destRegion
 	destSsmClient := ssm.NewFromConfig(destCfg)
 	destParameterInput := ssm.PutParameterInput{
 		Name:     &destParamName,
@@ -40,17 +40,12 @@ func syncParam(name string, arn string, region string) {
 		Type:     decryptedSourceParam.Parameter.Type,
 	}
 
-	exists, tagRegion := lookupDestinationParam(ctx, destSsmClient, destParamName, region)
-	if exists {
-		if tagRegion != sourceRegion {
-			// this paramter was replicated from a different region. Skip it.
-			log.Printf("WARN: parameter [%s] in [%s] exists, but was replicated from a different region or is not tagged. ['%s' != '%s']", name, region, tagRegion, sourceRegion)
-			return
-		}
-		// put with overwrite no tagging
+	exists, sync := lookupDestinationParam(ctx, destSsmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
+	if exists && sync {
+		// overwrite, no tagging
 		destParameterInput.Overwrite = true
-	} else {
-		// put new parameter with tag
+	} else if !exists && sync {
+		// new parameter with tag
 		tagKey := "ssm-replicated-from"
 		destParameterInput.Tags = []ssmType.Tag{
 			{
@@ -60,12 +55,14 @@ func syncParam(name string, arn string, region string) {
 		}
 	}
 
-	_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
-	if err != nil {
-		log.Printf("ERR: unable to put paramenter [%s] in [%s]", name, region)
-		log.Printf("ERR: %s", err)
-		return
-	}
+	if sync {
+		_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
+		if err != nil {
+			log.Printf("ERR: unable to put paramenter [%s] in [%s]", name, destRegion)
+			log.Printf("ERR: %s", err)
+			return
+		}
 
-	log.Printf("INFO: successfully syncd [%s] from region [%s] to region [%s]", name, sourceRegion, region)
+		log.Printf("INFO: successful sync: [%s] region [%s] -> region [%s]", name, sourceRegion, destRegion)
+	}
 }

@@ -12,7 +12,7 @@ import (
 
 // sync grabs parameters from ssm
 func sync(ssmClient *ssm.Client, path string) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*20))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*45))
 	defer cancel()
 
 	ssmPathInput := ssm.GetParametersByPathInput{

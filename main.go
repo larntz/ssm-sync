@@ -48,7 +48,7 @@ func main() {
 
 	ssmClient, _ := awsAuth()
 	for {
-		log.Printf("INFO: starting sync")
+		log.Printf("INFO: sync start")
 		sync(ssmClient, os.Getenv("SSM_PATH"))
 		time.Sleep(1 * time.Minute)
 	}
