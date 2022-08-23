@@ -54,20 +54,20 @@ func lookupDestinationParam(ctx context.Context, client *ssm.Client, name string
 	// this paramter was replicated from a different region or is not tagged `ssm-replicated-from`
 	if tagRegion != sourceRegion {
 		if tagRegion == "" {
-			log.Printf("WARN: parameter [%s] in [%s] exists, but is not tagged.", name, destRegion)
+			log.Printf("WARN: parameter exists, but is not tagged: [%s] in [%s]", name, destRegion)
 		} else {
-			log.Printf("WARN: parameter [%s] in [%s] exists, but was replicated from a different region. ['%s' != '%s']", name, destRegion, tagRegion, sourceRegion)
+			log.Printf("WARN: parameter exists, but was replicated from a different region: [%s] in [%s], ['%s' != '%s']", name, destRegion, tagRegion, sourceRegion)
 		}
 		return
 	}
 
 	// source and destination values match, do not sync
 	if *param.Parameter.Value == sourceValue {
-		log.Printf("INFO: parameter [%s] in [%s] exists and values match.", name, destRegion)
+		log.Printf("INFO: parameter exists and values match: [%s] in [%s]", name, destRegion)
 		return
 	}
 
-	log.Printf("INFO: parameter [%s] in [%s] exists, but needs updated.", name, destRegion)
+	log.Printf("INFO: parameter exists, but needs updated: [%s] in [%s]", name, destRegion)
 	sync = true
 	return
 }

@@ -24,7 +24,7 @@ func syncParam(name string, arn string, destRegion string) {
 
 	decryptedSourceParam, err := ssmClient.GetParameter(ctx, &getParamInput)
 	if err != nil {
-		log.Printf("ERR: unable to retrieve paramenter [%s] from [%s]", name, GetRegion(arn))
+		log.Printf("ERR: unable to retrieve paramenter: [%s] from [%s]", name, GetRegion(arn))
 		log.Printf("ERR: %s", err)
 		return
 	}
@@ -58,7 +58,7 @@ func syncParam(name string, arn string, destRegion string) {
 	if sync {
 		_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
 		if err != nil {
-			log.Printf("ERR: unable to put paramenter [%s] in [%s]", name, destRegion)
+			log.Printf("ERR: unable to put paramenter: [%s] in [%s]", name, destRegion)
 			log.Printf("ERR: %s", err)
 			return
 		}
