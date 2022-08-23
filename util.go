@@ -67,6 +67,7 @@ func lookupDestinationParam(ctx context.Context, client *ssm.Client, name string
 		return
 	}
 
+	log.Printf("INFO: parameter [%s] in [%s] exists, but needs updated.", name, destRegion)
 	sync = true
 	return
 }
