@@ -1,4 +1,4 @@
-package main
+package sync
 
 import (
 	"context"
@@ -6,6 +6,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	ssmType "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 )
@@ -21,7 +22,7 @@ func GetRegion(arn string) string {
 func lookupDestinationParam(ctx context.Context, client *ssm.Client, name string, destRegion string, sourceValue string, sourceRegion string) (exists bool, sync bool) {
 	getParamInput := ssm.GetParameterInput{
 		Name:           &name,
-		WithDecryption: true,
+		WithDecryption: aws.Bool(true),
 	}
 
 	param, err := client.GetParameter(ctx, &getParamInput)

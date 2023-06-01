@@ -1,4 +1,4 @@
-package main
+package sync
 
 import (
 	"context"
@@ -7,18 +7,19 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-// sync grabs parameters from ssm
-func sync(ssmClient *ssm.Client, path string) {
+// Parameters grabs parameters from ssm
+func Parameters(ssmClient *ssm.Client, path string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*45))
 	defer cancel()
 
 	ssmPathInput := ssm.GetParametersByPathInput{
 		Path:           &path,
-		Recursive:      true,
-		WithDecryption: false,
+		Recursive:      aws.Bool(true),
+		WithDecryption: aws.Bool(false),
 	}
 
 	for {
