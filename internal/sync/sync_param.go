@@ -1,4 +1,4 @@
-package main
+package sync
 
 import (
 	"context"
@@ -6,8 +6,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	ssmType "github.com/aws/aws-sdk-go-v2/service/ssm/types"
+	"github.com/larntz/ssm-sync/internal/auth"
 )
 
 func syncParam(name string, arn string, destRegion string) {
@@ -16,10 +18,10 @@ func syncParam(name string, arn string, destRegion string) {
 
 	sourceRegion := GetRegion(arn)
 
-	ssmClient, cfg := awsAuth()
+	ssmClient, cfg := auth.AwsAuth()
 	getParamInput := ssm.GetParameterInput{
 		Name:           &name,
-		WithDecryption: true,
+		WithDecryption: aws.Bool(true),
 	}
 
 	decryptedSourceParam, err := ssmClient.GetParameter(ctx, &getParamInput)
@@ -43,7 +45,7 @@ func syncParam(name string, arn string, destRegion string) {
 	exists, sync := lookupDestinationParam(ctx, destSsmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
 	if exists && sync {
 		// overwrite, no tagging
-		destParameterInput.Overwrite = true
+		destParameterInput.Overwrite = aws.Bool(true)
 	} else if !exists && sync {
 		// new parameter with tag
 		tagKey := "ssm-replicated-from"

@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
-func awsAuth() (*ssm.Client, aws.Config) {
+func AwsAuth() (*ssm.Client, aws.Config) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*2))
 	defer cancel()
 
