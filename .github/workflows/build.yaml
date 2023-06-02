@@ -18,6 +18,8 @@ jobs:
       uses: golangci/golangci-lint-action@v3
       with:
         args: --timeout 5m
+        # latest version is busted: https://github.com/golangci/golangci-lint/issues/3862
+        version: v1.52.2
 
     - name: build
       run: go build -o ~/release/ssm-sync-linux-arm64
