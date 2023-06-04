@@ -21,7 +21,5 @@ jobs:
         # latest version is busted: https://github.com/golangci/golangci-lint/issues/3862
         version: v1.52.2
 
-    - name: debug dirs
-      run: pwd; ls -R
     - name: build
       run: make build
