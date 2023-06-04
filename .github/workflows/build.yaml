@@ -21,5 +21,7 @@ jobs:
         # latest version is busted: https://github.com/golangci/golangci-lint/issues/3862
         version: v1.52.2
 
+    - name: debug dirs
+      run: pwd; ls -R
     - name: build
-      run: go build -o ~/release/ssm-sync-linux-arm64 ./cmd/ssm-sync/
+      run: make build

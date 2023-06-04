@@ -3,7 +3,7 @@ BINARY_NAME=ssm-sync
 all: build test
  
 build:
-	go build -o ${BINARY_NAME} ./cmd/ssm-sync/main.go
+	go build -o ./bin/${BINARY_NAME} ./cmd/ssm-sync/main.go
  
 test:
  
