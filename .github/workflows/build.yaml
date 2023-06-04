@@ -22,4 +22,4 @@ jobs:
         version: v1.52.2
 
     - name: build
-      run: go build -o ~/release/ssm-sync-linux-arm64
+      run: go build -o ~/release/ssm-sync-linux-arm64 ./cmd/ssm-sync/
