@@ -31,10 +31,8 @@ import (
 //     "Statement": [
 //         {
 //             "Action": [
-//                 "ssm:GetParametersByPath",
-//                 "ssm:GetParameter",
+//                 "ssm:GetParameter*",
 //                 "ssm:PutParameter",
-//                 "ssm:GetParameters",
 //                 "ssm:ListTagsForResource",
 //                 "ssm:AddTagsToResource"
 //             ],
@@ -49,7 +47,11 @@ import (
 func main() {
 	log.Printf("INFO: ssm-sync started")
 
-	ssmClient, _ := auth.AwsAuth()
+	ssmClient, err := auth.AwsAuth()
+	if err != nil {
+		log.Fatalf("Authentication failed: %s", err.Error())
+	}
+
 	for {
 		log.Printf("INFO: sync start")
 		sync.Parameters(ssmClient, os.Getenv("SSM_PATH"))

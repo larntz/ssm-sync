@@ -39,7 +39,7 @@ func Parameters(ssmClient *ssm.Client, path string) {
 				// sync to destination regions
 				if *tag.Key == "ssm-replicate-regions" {
 					for _, region := range strings.Split(*tag.Value, ":") {
-						go syncParam(*param.Name, *param.ARN, region)
+						go syncParam(ssmClient, *param.Name, *param.ARN, region)
 					}
 				}
 			}
