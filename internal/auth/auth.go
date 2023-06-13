@@ -13,17 +13,17 @@ import (
 )
 
 func AwsAuth() (*ssm.Client, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*2))
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*20))
 	defer cancel()
 
 	cfg, err := config.LoadDefaultConfig(ctx,
 		config.WithRegion(os.Getenv("AWS_REGION")),
+		config.WithSharedCredentialsFiles(
+			[]string{"/aws/credentials"},
+		),
 		config.WithWebIdentityRoleCredentialOptions(func(options *stscreds.WebIdentityRoleOptions) {
 			options.RoleSessionName = "IRSA_SSM_SYNC@" + os.Getenv("HOSTNAME")
 		}),
-		config.WithSharedCredentialsFiles(
-			[]string{"/aws/credentials", "/home/larntz/.aws/ssm-credentials"},
-		),
 	)
 	if err != nil {
 		return nil, err
