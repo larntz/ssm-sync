@@ -9,16 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	ssmType "github.com/aws/aws-sdk-go-v2/service/ssm/types"
-	"github.com/larntz/ssm-sync/internal/auth"
 )
 
-func syncParam(name string, arn string, destRegion string) {
+func syncParam(ssmClient *ssm.Client, name string, arn string, destRegion string) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(time.Second*5))
 	defer cancel()
 
 	sourceRegion := GetRegion(arn)
 
-	ssmClient, cfg := auth.AwsAuth()
+	//ssmClient, cfg := auth.AwsAuth()
 	getParamInput := ssm.GetParameterInput{
 		Name:           &name,
 		WithDecryption: aws.Bool(true),
@@ -32,9 +31,6 @@ func syncParam(name string, arn string, destRegion string) {
 	}
 
 	destParamName := strings.Replace(name, sourceRegion, destRegion, -1)
-	destCfg := cfg
-	destCfg.Region = destRegion
-	destSsmClient := ssm.NewFromConfig(destCfg)
 	destParameterInput := ssm.PutParameterInput{
 		Name:     &destParamName,
 		Value:    decryptedSourceParam.Parameter.Value,
@@ -42,7 +38,7 @@ func syncParam(name string, arn string, destRegion string) {
 		Type:     decryptedSourceParam.Parameter.Type,
 	}
 
-	exists, sync := lookupDestinationParam(ctx, destSsmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
+	exists, sync := lookupDestinationParam(ctx, ssmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
 	if exists && sync {
 		// overwrite, no tagging
 		destParameterInput.Overwrite = aws.Bool(true)
@@ -58,7 +54,7 @@ func syncParam(name string, arn string, destRegion string) {
 	}
 
 	if sync {
-		_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
+		_, err = ssmClient.PutParameter(ctx, &destParameterInput, func(options *ssm.Options) { options.Region = destRegion })
 		if err != nil {
 			log.Printf("ERR: unable to put paramenter: [%s] in [%s]", name, destRegion)
 			log.Printf("ERR: %s", err)

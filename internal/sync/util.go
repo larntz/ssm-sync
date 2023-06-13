@@ -25,7 +25,7 @@ func lookupDestinationParam(ctx context.Context, client *ssm.Client, name string
 		WithDecryption: aws.Bool(true),
 	}
 
-	param, err := client.GetParameter(ctx, &getParamInput)
+	param, err := client.GetParameter(ctx, &getParamInput, func(options *ssm.Options) { options.Region = destRegion })
 	if err != nil {
 		var pnf *ssmType.ParameterNotFound
 		if errors.As(err, &pnf) {
@@ -40,7 +40,7 @@ func lookupDestinationParam(ctx context.Context, client *ssm.Client, name string
 
 	exists = true
 
-	output, err := client.ListTagsForResource(ctx, &ssm.ListTagsForResourceInput{ResourceId: param.Parameter.Name, ResourceType: "Parameter"})
+	output, err := client.ListTagsForResource(ctx, &ssm.ListTagsForResourceInput{ResourceId: param.Parameter.Name, ResourceType: "Parameter"}, func(options *ssm.Options) { options.Region = destRegion })
 	if err != nil {
 		log.Printf("failed to get tags for %s\nerr: %s", name, err)
 	}
