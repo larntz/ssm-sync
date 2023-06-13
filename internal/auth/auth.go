@@ -22,7 +22,7 @@ func AwsAuth() (*ssm.Client, error) {
 			options.RoleSessionName = "IRSA_SSM_SYNC@" + os.Getenv("HOSTNAME")
 		}),
 		config.WithSharedCredentialsFiles(
-			[]string{"/aws-credentials", "/home/larntz/.aws/ssm-credentials"},
+			[]string{"/aws/credentials", "/home/larntz/.aws/ssm-credentials"},
 		),
 	)
 	if err != nil {
