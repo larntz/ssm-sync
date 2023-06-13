@@ -3,13 +3,10 @@ package sync
 import (
 	"context"
 	"log"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/config"
-	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/ssm"
 	ssmType "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 )
@@ -34,20 +31,6 @@ func syncParam(ssmClient *ssm.Client, name string, arn string, destRegion string
 	}
 
 	destParamName := strings.Replace(name, sourceRegion, destRegion, -1)
-	destCfg, err := config.LoadDefaultConfig(ctx,
-		config.WithRegion(os.Getenv("AWS_REGION")),
-		config.WithWebIdentityRoleCredentialOptions(func(options *stscreds.WebIdentityRoleOptions) {
-			options.RoleSessionName = "IRSA_SSM_SYNC@" + os.Getenv("HOSTNAME")
-		}),
-		config.WithSharedCredentialsFiles(
-			[]string{"/aws-credentials", "/home/larntz/.aws/ssm-credentials"},
-		),
-	)
-	if err != nil {
-		log.Print("ERROR: config load error:", err)
-	}
-	destCfg.Region = destRegion
-	destSsmClient := ssm.NewFromConfig(destCfg)
 	destParameterInput := ssm.PutParameterInput{
 		Name:     &destParamName,
 		Value:    decryptedSourceParam.Parameter.Value,
@@ -55,7 +38,7 @@ func syncParam(ssmClient *ssm.Client, name string, arn string, destRegion string
 		Type:     decryptedSourceParam.Parameter.Type,
 	}
 
-	exists, sync := lookupDestinationParam(ctx, destSsmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
+	exists, sync := lookupDestinationParam(ctx, ssmClient, destParamName, destRegion, *decryptedSourceParam.Parameter.Value, sourceRegion)
 	if exists && sync {
 		// overwrite, no tagging
 		destParameterInput.Overwrite = aws.Bool(true)
@@ -71,7 +54,7 @@ func syncParam(ssmClient *ssm.Client, name string, arn string, destRegion string
 	}
 
 	if sync {
-		_, err = destSsmClient.PutParameter(ctx, &destParameterInput)
+		_, err = ssmClient.PutParameter(ctx, &destParameterInput, func(options *ssm.Options) { options.Region = destRegion })
 		if err != nil {
 			log.Printf("ERR: unable to put paramenter: [%s] in [%s]", name, destRegion)
 			log.Printf("ERR: %s", err)
