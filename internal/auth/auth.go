@@ -26,7 +26,7 @@ func AwsAuth() (*ssm.Client, error) {
 		),
 	)
 	if err != nil {
-		log.Print("ERROR: config load error:", err)
+		return nil, err
 	}
 
 	client := sts.NewFromConfig(cfg)
